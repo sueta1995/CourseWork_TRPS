@@ -29,6 +29,76 @@
 
 ## Загрузка данных и создание датасета
 
+Сначала с помощью сервиса [iNaturalist](https://www.inaturalist.org/observations/export) были загружены csv файлы, в которых содержатся датафреймы с двумя полями `scientific_name` и `image_url` (ссылка на файловый сервер с фотографией стрекозы) и которые соответствуют видам, обитающим в Москве. Данные о видах стрекоз, обитающих в Москве и МО, взяты из [проекта "Стрекозы Московской области/Dragonflies of the Moscow region (Russia)"](https://www.inaturalist.org/projects/strekozy-moskovskoy-oblasti-dragonflies-of-the-moscow-region-russia-815bf252-ee71-4519-840f-1620fd207bc5). Загружены данные для 64 видов.
+
+Сначала был создан скрипт для загрузки фотографий с сервиса iNaturalist для каждого из 64 видов. Ниже представлен код для чтения всех файлов `observation-*.csv` и объединения их в один датафрейм Pandas.
+
+```python
+df_columns = ['image_url', 'scientific_name']
+df = pd.DataFrame(columns=df_columns)
+
+for filename in glob.glob(f"{path}\\*.csv"):
+    temp_df = pd.read_csv(filename)
+    df = pd.concat([df, temp_df], axis=0)
+    
+df.index = range(len(df))
+```
+
+После подготовки датафрейма были созданы директории для каждого вида стрекозы и загружены фотографии по полю `image_url` (код ниже, загрузка происходит с 96936-го элемента, так как при загрузке произошла ошибка, и выполнение программы прекратилось).
+
+```python
+sub_df = df.iloc[96935:]
+sub_df
+
+index = 96936
+
+for raw in sub_df.iloc:
+    try:
+        filename = f"{index}.jpg"
+
+        urllib.request.urlretrieve(raw['image_url'], filename)
+        shutil.move(filename, f"\\mnt\\d\\odonata\\{raw['scientific_name']}")
+
+        index += 1
+    except Exception:
+        continue
+```
+
+Проверка созданных директорий в ходе выполнения программы, код проверки представлен ниже.
+
+```python
+DATADIR = "/mnt/d/odonata"
+CATEGORIES = os.listdir(DATADIR)
+
+print(f"{len(CATEGORIES)}\n{CATEGORIES}")
+```
+
+Вывод:
+
+```
+64
+['Aeshna affinis', 'Aeshna crenata', 'Aeshna cyanea', 'Aeshna grandis', 'Aeshna isoceles', 'Aeshna juncea', 'Aeshna mixta', 'Aeshna soneharai', 'Aeshna subarctica', 'Aeshna viridis', 'Anax imperator', 'Anax parthenope', 'Brachytron pratense', 'Calopteryx splendens', 'Calopteryx virgo', 'Coenagrion armatum', 'Coenagrion hastulatum', 'Coenagrion johanssoni', 'Coenagrion lunulatum', 'Coenagrion ornatum', 'Coenagrion puella', 'Coenagrion pulchellum', 'Cordulia aenea', 'Enallagma cyathigerum', 'Epitheca bimaculata', 'Erythromma najas', 'Erythromma viridulum', 'Gomphus vulgatissimus', 'Ischnura elegans', 'Ischnura pumilio', 'Lestes barbarus', 'Lestes dryas', 'Lestes sponsa', 'Lestes virens', 'Leucorrhinia albifrons', 'Leucorrhinia caudalis', 'Leucorrhinia dubia', 'Leucorrhinia pectoralis', 'Leucorrhinia rubicunda', 'Libellula depressa', 'Libellula fulva', 'Libellula quadrimaculata', 'Nehalennia speciosa', 'Onychogomphus forcipatus', 'Ophiogomphus cecilia', 'Orthetrum brunneum', 'Orthetrum cancellatum', 'Orthetrum coerulescens', 'Pantala flavescens', 'Platycnemis pennipes', 'Pyrrhosoma nymphula', 'Somatochlora arctica', 'Somatochlora flavomaculata', 'Somatochlora metallica', 'Stylurus flavipes', 'Sympecma fusca', 'Sympecma paedisca', 'Sympetrum danae', 'Sympetrum flaveolum', 'Sympetrum fonscolombii', 'Sympetrum pedemontanum', 'Sympetrum sanguineum', 'Sympetrum striolatum', 'Sympetrum vulgatum']
+```
+
+Из вывода понятно, что все директории созданы верно, а их количество соответствует общему количеству видов стрекоз, которые рассматриваются в рамках проекта. Теперь необходимо проверить правильность загрузки фотографий, код этой проверки представлен ниже.
+
+```python
+check = []
+
+for category in CATEGORIES:
+    check.append((category, len(os.listdir(os.path.join(DATADIR, category)))))
+
+print(check)
+```
+
+Вывод проверки:
+
+```
+[('Aeshna affinis', 947), ('Aeshna crenata', 276), ('Aeshna cyanea', 4717), ('Aeshna grandis', 2239), ('Aeshna isoceles', 1510), ('Aeshna juncea', 2233), ('Aeshna mixta', 4545), ('Aeshna soneharai', 426), ('Aeshna subarctica', 462), ('Aeshna viridis', 258), ('Anax imperator', 3808), ('Anax parthenope', 2016), ('Brachytron pratense', 1018), ('Calopteryx splendens', 6878), ('Calopteryx virgo', 4116), ('Coenagrion armatum', 317), ('Coenagrion hastulatum', 1687), ('Coenagrion johanssoni', 366), ('Coenagrion lunulatum', 266), ('Coenagrion ornatum', 79), ('Coenagrion puella', 6972), ('Coenagrion pulchellum', 3514), ('Cordulia aenea', 2143), ('Enallagma cyathigerum', 6316), ('Epitheca bimaculata', 667), ('Erythromma najas', 3220), ('Erythromma viridulum', 2127), ('Gomphus vulgatissimus', 2440), ('Ischnura elegans', 5329), ('Ischnura pumilio', 1146), ('Lestes barbarus', 1372), ('Lestes dryas', 3252), ('Lestes sponsa', 2903), ('Lestes virens', 1303), ('Leucorrhinia albifrons', 456), ('Leucorrhinia caudalis', 341), ('Leucorrhinia dubia', 980), ('Leucorrhinia pectoralis', 761), ('Leucorrhinia rubicunda', 1281), ('Libellula depressa', 3896), ('Libellula fulva', 3601), ('Libellula quadrimaculata', 4790), ('Nehalennia speciosa', 190), ('Onychogomphus forcipatus', 3332), ('Ophiogomphus cecilia', 817), ('Orthetrum brunneum', 2961), ('Orthetrum cancellatum', 4121), ('Orthetrum coerulescens', 3634), ('Pantala flavescens', 4015), ('Platycnemis pennipes', 4013), ('Pyrrhosoma nymphula', 4359), ('Somatochlora arctica', 182), ('Somatochlora flavomaculata', 582), ('Somatochlora metallica', 868), ('Stylurus flavipes', 313), ('Sympecma fusca', 3577), ('Sympecma paedisca', 1938), ('Sympetrum danae', 3576), ('Sympetrum flaveolum', 3307), ('Sympetrum fonscolombii', 3987), ('Sympetrum pedemontanum', 1577), ('Sympetrum sanguineum', 6955), ('Sympetrum striolatum', 3880), ('Sympetrum vulgatum', 4333)]
+```
+
+Для каждого из видов фотографии загружены верно. Теперь можно переходить к подготовке этих загруженных данных для обучения и созданию модели.
+
 ## Подготовка данных для обучения модели
 
 ## Создание модели и ее обучение
