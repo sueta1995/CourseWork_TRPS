@@ -99,7 +99,79 @@ print(check)
 
 Для каждого из видов фотографии загружены верно. Теперь можно переходить к подготовке этих загруженных данных для обучения и созданию модели.
 
+Весь код, отвечающий за загрузку данных и создание датасета, располагается в [`classification/load_photos.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/load_photos.ipynb).
+
 ## Подготовка данных для обучения модели
+
+Основная проблема при подготовке данных для обучения - сильная их неравномерность. Например, количество фотографий для вида *Coenagarion lumalatum* (стрелка весенняя) - 79, а для вида *Aeshna cyeanea* (коромысло синее, ~~мой самый любимый вид~~) - 4717. Для наиболее качественного обучение необходимо, чтобы данные были равномерно распределены, то есть для каждого из видов. Поэтому было принято решение не брать в рассмотрение редкие виды стрекоз, для которых количество фотографий меньше 1000. 
+
+Код, который реализует это, представлен ниже.
+
+```python
+DATADIR = "/mnt/d/odonata"
+CATEGORIES = np.array(os.listdir(DATADIR))
+
+CATEGORIES = np.fromiter(
+    (category for category in CATEGORIES if len(os.listdir(os.path.join(DATADIR, category))) > 1000),
+    dtype = CATEGORIES.dtype
+)
+
+print(len(CATEGORIES))
+```
+
+Вывод:
+
+```
+44
+```
+
+Это означает, что будущая модель будет обучаться на основе 44 классов, в каждом из которых по 1000 данных для обучения и валидации.
+
+Далее необходимо распределить данные на данные для тренировки и данные для валидации, разместить это все в отдельном каталоге. В каждом классе будет 900 фотографий для тренировки и 100 фотографий для валидации.
+
+Код, который реализует разделение данных для тренировки, представлен ниже.
+
+```python
+def create_training_data():
+    for category in CATEGORIES:
+        path = os.path.join(DATADIR, category)
+        dst_path = f"/mnt/d/odonata_data/train_data/{category}"
+        
+        os.mkdir(dst_path)
+        
+        for _ in tqdm(range(900)):
+            try:
+                img_path = os.path.join(path, os.listdir(path)[_])
+                
+                shutil.copy(img_path, dst_path)
+            except Exception as e:
+                pass
+```
+
+И код для разделения данных для валидации:
+
+```python
+def create_validation_data():
+    for category in CATEGORIES:
+        path = os.path.join(DATADIR, category)
+        dst_path = f"/mnt/d/odonata_data/valid_data/{category}"
+        
+        os.mkdir(dst_path)
+        
+        for _ in tqdm(range(900, 1000)):
+            try:
+                img_path = os.path.join(path, os.listdir(path)[_])
+                
+                shutil.copy(img_path, dst_path)
+            except Exception as e:
+                pass
+```
+
+Библиотека `tqdm` необходима для того, чтобы отслеживать каждую итерацию во вложенном цикле.
+
+После вызова функций `create_training_data` и `create_validation_data` были созданы директории `train_data` и `valid_data` соответственно, и в каждой из них находились по 44 папки, соответствующие всем классам. В каждой директории внутри `train_data` находилось 900 фотографий, внутри `valid_data` - 100.
+
+Весь код, отвечающий за подготовку данных для обучения модели, располагается в [`classification/odonata_data.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/odonata_data.ipynb).
 
 ## Создание модели и ее обучение
 
