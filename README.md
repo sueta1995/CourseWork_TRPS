@@ -103,7 +103,7 @@ print(check)
 
 ## Подготовка данных для обучения модели
 
-Основная проблема при подготовке данных для обучения - сильная их неравномерность. Например, количество фотографий для вида *Coenagarion lumalatum* (стрелка весенняя) - 79, а для вида *Aeshna cyeanea* (коромысло синее, ~~мой самый любимый вид~~) - 4717. Для наиболее качественного обучение необходимо, чтобы данные были равномерно распределены, то есть для каждого из видов. Поэтому было принято решение не брать в рассмотрение редкие виды стрекоз, для которых количество фотографий меньше 1000. 
+Основная проблема при подготовке данных для обучения - сильная их неравномерность. Например, количество фотографий для вида *Coenagarion lumalatum* (стрелка весенняя) - 79, а для вида *Aeshna cyanea* (коромысло синее, ~~мой самый любимый вид~~) - 4717. Для наиболее качественного обучение необходимо, чтобы данные были равномерно распределены, то есть для каждого из видов. Поэтому было принято решение не брать в рассмотрение редкие виды стрекоз, для которых количество фотографий меньше 1000. 
 
 Код, который реализует это, представлен ниже.
 
@@ -174,6 +174,247 @@ def create_validation_data():
 Весь код, отвечающий за подготовку данных для обучения модели, располагается в [`classification/odonata_data.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/odonata_data.ipynb).
 
 ## Создание модели и ее обучение
+
+Входные данные у модели имеют следующий размер: 224 пикселей в высоту(`IMG_SIZE`), 224 пикселей в ширину (`IMG_SIZE`) и 3 канала RGB (`CHANNELS`). Количество эпох - 200 (`EPOCHS`). Размер пакета - 128 (`BATCH_SIZE`). Ниже представлен код, описывающий глобальные переменные.
+
+```python
+IMG_SIZE = 224
+CHANNELS = 3
+TRAIN_DIR = '/mnt/d/odonata_data/train_data'
+VALID_DIR = '/mnt/d/odonata_data/valid_data'
+EPOCHS = 200
+BATCH_SIZE = 128
+```
+
+Так как данных для обучения не так много, они будут дополнены новыми с помощью вращения, сдвигом по ширине и высоте, зумом, затемнением. Код представлен ниже.
+
+```python
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=10,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
+    zoom_range=0.1,
+    brightness_range=[0.15,2.0],
+    horizontal_flip=True
+)
+
+valid_datagen = ImageDataGenerator(
+    rescale=1./255.
+)
+```
+
+Далее нужно изменить размер входных изображений и перемешать их. Код, в котором это происходит, представлен ниже.
+
+```python
+train_generator = train_datagen.flow_from_directory(
+    TRAIN_DIR,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    color_mode='rgb',
+    batch_size=32,
+    seed=1,
+    shuffle=True,
+    class_mode='categorical'
+)
+
+valid_generator = valid_datagen.flow_from_directory(
+    VALID_DIR,
+    target_size=(IMG_SIZE, IMG_SIZE),
+    color_mode='rgb',
+    batch_size=32,
+    seed=7,
+    shuffle=True,
+    class_mode='categorical'
+)
+
+train_num = train_generator.samples
+valid_num = valid_generator.samples
+```
+
+Вывод:
+
+```
+Found 39600 images belonging to 44 classes.
+Found 4400 images belonging to 44 classes.
+```
+
+Это означает, что изображения успешно загружены и привязаны к 44 классам, которые соответствуют 44 рассматриваемым в рамках обучения видам.
+
+Далее необходимо создать модель. Поскольку машина, на которой будет происходить обучение не слишком мощная, причем видеокарта от производителя AMD (это вынуждает использовать UNIX-подобную систему), то выбор архитектуры модели пал на последовательную. В модели 8 слоев. 
+
+Код, в котором описаны все слои модели, представлен ниже.
+
+```python
+model = Sequential()
+
+model.add(Conv2D(filters=96, kernel_size=(11, 11),
+                 strides=(4, 4), activation="relu",
+                 input_shape=(IMG_SIZE, IMG_SIZE, CHANNELS)))
+model.add(BatchNormalization())
+model.add(MaxPool2D(pool_size=(3, 3), strides= (2, 2)))
+model.add(Conv2D(filters=256, kernel_size=(5, 5),
+                 strides=(1, 1), activation="relu",
+                 padding="same"))
+model.add(BatchNormalization())
+model.add(MaxPool2D(pool_size=(3, 3), strides=(2, 2)))
+model.add(Conv2D(filters=384, kernel_size=(3, 3),
+                 strides=(1, 1), activation="relu",
+                 padding="same"))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=384, kernel_size=(3, 3),
+                 strides=(1, 1), activation="relu",
+                 padding="same"))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=256, kernel_size=(3, 3),
+                 strides=(1, 1), activation="relu",
+                 padding="same"))
+model.add(BatchNormalization())
+model.add(MaxPool2D(pool_size=(3, 3), strides=(2, 2)))
+model.add(Flatten())
+model.add(Dense(4096, activation="relu"))
+model.add(Dropout(0.5))
+model.add(Dense(44, activation="softmax"))
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=SGD(learning_rate=0.001),
+              metrics=['accuracy'])
+
+model.summary()
+```
+
+Ниже представлено описание модели:
+
+```
+Model: "sequential_4"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ conv2d_16 (Conv2D)          (None, 54, 54, 96)        34944     
+                                                                 
+ batch_normalization_15 (Bat  (None, 54, 54, 96)       384       
+ chNormalization)                                                
+                                                                 
+ max_pooling2d_9 (MaxPooling  (None, 26, 26, 96)       0         
+ 2D)                                                             
+                                                                 
+ conv2d_17 (Conv2D)          (None, 26, 26, 256)       614656    
+                                                                 
+ batch_normalization_16 (Bat  (None, 26, 26, 256)      1024      
+ chNormalization)                                                
+                                                                 
+ max_pooling2d_10 (MaxPoolin  (None, 12, 12, 256)      0         
+ g2D)                                                            
+                                                                 
+ conv2d_18 (Conv2D)          (None, 12, 12, 384)       885120    
+                                                                 
+ batch_normalization_17 (Bat  (None, 12, 12, 384)      1536      
+ chNormalization)                                                
+                                                                 
+ conv2d_19 (Conv2D)          (None, 12, 12, 384)       1327488   
+                                                                 
+ batch_normalization_18 (Bat  (None, 12, 12, 384)      1536      
+ chNormalization)                                                
+                                                                 
+ conv2d_20 (Conv2D)          (None, 12, 12, 256)       884992    
+                                                                 
+ batch_normalization_19 (Bat  (None, 12, 12, 256)      1024      
+ chNormalization)                                                
+                                                                 
+ max_pooling2d_11 (MaxPoolin  (None, 5, 5, 256)        0         
+ g2D)                                                            
+                                                                 
+ flatten_3 (Flatten)         (None, 6400)              0         
+                                                                 
+ dense_6 (Dense)             (None, 4096)              26218496  
+                                                                 
+ dropout_3 (Dropout)         (None, 4096)              0         
+                                                                 
+ dense_7 (Dense)             (None, 44)                180268    
+                                                                 
+=================================================================
+Total params: 30,151,468
+Trainable params: 30,148,716
+Non-trainable params: 2,752
+_________________________________________________________________
+```
+
+Визуальное представление архитектуры модели:
+
+![text](media/model_visual.png)
+
+Расшифровка картинки:
+
+<table>
+  <tr>
+    <th>Цвет</th>
+    <th>Обозначение</th>
+  </tr>
+  <tr>
+    <td>Желтый</td>
+    <td>Слой Conv2D</td>
+  </tr>
+  <tr>
+    <td>Красный</td>
+    <td>Слой BatchNormalization</td>
+  </tr>
+  <tr>
+    <td>Бирюзовый</td>
+    <td>Слой MaxPooling2D</td>
+  </tr>
+  <tr>
+    <td>Синий</td>
+    <td>Слой Flatten</td>
+  </tr>
+  <tr>
+    <td>Темно-синий</td>
+    <td>Слой Dropout</td>
+  </tr>
+</table>
+
+После необходимо обучить модель, используются параметры `EPOCHS` и `BATCH_SIZE`, которые были объявлены раньше. Код, вызывающий функцию обучения, представлен ниже.
+
+```python
+history = model.fit(
+    train_generator,
+#     steps_per_epoch=train_num // BATCH_SIZE,
+    validation_data=valid_generator,
+#     validation_steps=valid_num // BATCH_SIZE,
+    batch_size=BATCH_SIZE,
+    epochs=EPOCHS,
+    verbose=1
+)
+```
+
+Обучение заняло около 25 часов, и точность на тестируемом наборе данных составляет 59%. Это одна из первых архитектур модели, используемой в рамках классификации видов стрекоз. В будущем эта модель будет улучшаться и усложняться.
+
+Ниже представлены графики для истории потерь и истории точности для каждой из 200 эпох обучения.
+
+![text](media/model_history.png)
+
+Код, отвечающий за создание блока из двух вышепредставленных графиков:
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2)
+
+# Plot history: Loss
+axes[0].plot(history.history['val_loss'])
+axes[0].set_title('Validation loss history')
+axes[0].set_ylabel('Loss value')
+axes[0].set_xlabel('No. epoch')
+
+# Plot history: accuracy
+axes[1].plot(history.history['val_accuracy'])
+axes[1].set_title('Validation accuracy history')
+axes[1].set_ylabel('Accuracy value (%)')
+axes[1].set_xlabel('No. epoch')
+
+fig.suptitle('Model history')
+plt.tight_layout()
+fig.savefig('/mnt/d/history_model.png', bbox_inches='tight')
+```
+
+Весь код, отвечающий за создание и обучение модели, располагается в [`classification/odonata_model.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/odonata_model.ipynb).
 
 ## Главное меню приложения и система регистрации
 
