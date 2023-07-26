@@ -1,10 +1,10 @@
 # Курсовая работа по ТРПС, 5 семестр
 
 <p align="left">
-  <img alt="Static Badge" src="https://img.shields.io/badge/python-3.10.12-purple">
-  <img alt="Static Badge" src="https://img.shields.io/badge/tensorflow-2.10.0-green">
-  <img alt="Static Badge" src="https://img.shields.io/badge/opencv-4.8.0.74-red">
-  <img alt="Static Badge" src="https://img.shields.io/badge/license-MIT-orange">
+  <a href="https://www.python.org/downloads/release/python-31012/"><img alt="Static Badge" src="https://img.shields.io/badge/python-3.10.12-purple"></a>
+  <a href="https://blog.tensorflow.org/2022/09/whats-new-in-tensorflow-210.html"><img alt="Static Badge" src="https://img.shields.io/badge/tensorflow-2.10.0-green"></a>
+  <a href="https://pypi.org/project/opencv-python/4.8.0.74/"><img alt="Static Badge" src="https://img.shields.io/badge/opencv-4.8.0.74-red"></a>
+  <a href="LICENSE"><img alt="Static Badge" src="https://img.shields.io/badge/license-MIT-orange"></a>
 </p>
 
 В данном проекте реализуется веб-приложение, которое создает карту мест обитания различных видов стрекоз Москвы. Пользователь регистрируется или заходит в аккаунт, присылает фотографию стрекозы и указывает местоположение находки, а обученная модель предсказывает вид, автоматически на карте создается метка, в которой содержится фотография и информация о предсказанном виде. Если меток с одним видом становится достаточно большим в одной зоне, то они объединяются. Пользователь может просматривать все метки, созданные другими пользователями, а также удалять собственные.
