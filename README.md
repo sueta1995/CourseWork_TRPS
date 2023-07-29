@@ -11,7 +11,7 @@
 
 Веб-приложение написано с помощью фреймворка Django. Бекэнд машинного обучения - Keras. Обучаемая модель последовательная (sequential). Данные для обучения, валидации и тестирования взяты с сервиса iNaturalist.
 
-В ветке [`main`](https://github.com/sueta1995/CourseWork_TRPS/tree/main) находятся отчет *(название файла)*, техническовое задание *(название файла)*, документация *(название файла)*. В ветке [`machine_learing`](https://github.com/sueta1995/CourseWork_TRPS/tree/machine_learning) располагаются блокноты Jupyter Notebook с функциями для загрузки и подготовки данных для обучения и создания и обучения модели. В ветке [`web`]() находится само веб-приложение.
+В ветке [`main`](https://github.com/sueta1995/CourseWork_TRPS/tree/main) находятся отчет *(название файла)*, техническовое задание *(название файла)*, документация *(название файла)*. В ветке [`machine_learing`](https://github.com/sueta1995/CourseWork_TRPS/tree/machine_learning) располагаются блокноты Jupyter Notebook с функциями для загрузки и подготовки данных для обучения и создания и обучения модели. В ветке [`web`](https://github.com/sueta1995/CourseWork_TRPS/tree/web) находится само веб-приложение.
 
 ## Этапы работы
 
@@ -413,6 +413,35 @@ fig.suptitle('Model history')
 plt.tight_layout()
 fig.savefig('/mnt/d/history_model.png', bbox_inches='tight')
 ```
+
+Второй вариант модели - ResNet50, с 50 слоями. Графическое представление модели:
+
+![text](media/model_visual_res50.png)
+
+Ниже представлен код, отвечающий за создание модели типа ResNet50, теперь количесво эпох равно 40, `BATCH_SIZE` равно 256.
+
+```python
+model = tf.keras.applications.resnet.ResNet50(
+    include_top=True,
+    weights=None,
+    input_tensor=None,
+    input_shape=(IMG_SIZE, IMG_SIZE, CHANNELS),
+    pooling=None,
+    classes=44,
+)
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=SGD(),
+              metrics=['accuracy'])
+
+model.summary()
+```
+
+Обучение заняло гораздо меньше времени (примерно 4 часа), чем у первого варианта, что связано c архитектурой модели (быстрых связей). Точность на валидационных данных составила 65%.
+
+Ниже представлена графически история обучения модели:
+
+![text](media/model_history_res50.png)
 
 Весь код, отвечающий за создание и обучение модели, располагается в [`classification/odonata_model.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/odonata_model.ipynb).
 
