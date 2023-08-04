@@ -491,6 +491,11 @@ model.summary()
     <td>Ссылка на статью wikipedia о данном виде</td>
     <td>String</td>
   </tr>
+  <tr>
+    <td>photos_url</td>
+    <td>Ссылка на набор фотографий с данным видом</td>
+    <td>String</td>
+  </tr>
 </table>
 
 ***User***
