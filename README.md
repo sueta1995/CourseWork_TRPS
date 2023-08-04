@@ -445,7 +445,7 @@ model.summary()
 
 Третий вариант модели - EffiecientNetB0. Графическое представление модели:
 
-![text](media/model_visual_efficientb0.png")
+![text](media/model_visual_efficientb0.png)
 
 Обучение производилось на протяжении 20 эпох, был использованы собственные верхние слои для модели: `GlobalAvaragePooling`, `BatchNormalization` и `DropOut` с параметром `0.5`. Само обучение по времени заняло 20 часов, точность на валидационном наборе данных составила 35%. Однако при проверке на тестирующем наборе данных присутствовал эффект переобучения, и модель неправильно предсказывала виды.
 
@@ -453,7 +453,7 @@ model.summary()
 
 Ниже представлена графически история обучения модели:
 
-![text](media/model_history_efficientnetb0.png)
+![text](media/model_history_efficientb0.png)
 
 Весь код, отвечающий за создание и обучение модели, располагается в [`classification/odonata_model.ipynb`](https://github.com/sueta1995/CourseWork_TRPS/blob/machine_learning/classification/odonata_model.ipynb).
 
