@@ -557,6 +557,11 @@ model.summary()
     <td>String</td>
   </tr>
   <tr>
+    <td>publication_date</td>
+    <td>Дата добавления находки на карту</td>
+    <td>Date</td>
+  </tr>
+  <tr>
     <td>photo_url</td>
     <td>Ссылка на фотографию находки</td>
     <td>String</td>
