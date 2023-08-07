@@ -17,7 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from finds import views
+
 urlpatterns = [
+    path('', views.index),
     path('admin/', admin.site.urls),
-    path('finds/', include('finds.urls'))
+    path('finds/', include('finds.urls')),
+    path('contacts/', views.contacts, name='contacts')
 ]

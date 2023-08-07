@@ -1,0 +1,31 @@
+{% extends 'finds/base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <h1 class="display-6">Последние находки</h1><br>
+
+    {% if finds %}
+
+        {% for find in finds %}
+            <a class="card mb-3" href={% url 'detail' find.id %}>
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="{{ find.photo_url }}" class="img-fluid rounded-start" alt="...">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ find.dragonfly.common_name }} ({{ find.dragonfly.specific_name }})</h5>
+                            <p class="card-text">{{ find.comment }}</p>
+                            <p class="card-text"><small class="text-muted">От пользователя {{ find.user_id }} в {{ find.publication_date }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+
+    {% else %}
+        <p>Пока что никто ничего не находил ;(</p>
+    {% endif %}
+
+{% endblock %}
