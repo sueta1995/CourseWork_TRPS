@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 ('latitude', models.FloatField()),
                 ('comment', models.CharField(max_length=256)),
                 ('photo_url', models.URLField(max_length=256)),
-                ('dragonfly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.dragonfly')),
+                ('dragonfly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='finds.dragonfly')),
             ],
         ),
     ]

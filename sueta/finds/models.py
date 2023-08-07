@@ -1,5 +1,7 @@
 from django.db import models
 
+from datetime import datetime
+
 
 class Dragonfly(models.Model):
     specific_name = models.CharField(max_length=32)
@@ -15,6 +17,7 @@ class Find(models.Model):
     longitude = models.FloatField()
     latitude = models.FloatField()
     comment = models.CharField(max_length=256)
+    publication_date = models.DateTimeField('date published', default=datetime.now)
     photo_url = models.URLField(max_length=256)
     dragonfly = models.ForeignKey(Dragonfly, on_delete=models.CASCADE)
 
