@@ -491,11 +491,6 @@ model.summary()
     <td>Ссылка на статью wikipedia о данном виде</td>
     <td>String</td>
   </tr>
-  <tr>
-    <td>photos_url</td>
-    <td>Ссылка на набор фотографий с данным видом</td>
-    <td>String</td>
-  </tr>
 </table>
 
 ***User***
@@ -557,13 +552,18 @@ model.summary()
     <td>String</td>
   </tr>
   <tr>
-    <td>publication_date</td>
-    <td>Дата добавления находки на карту</td>
+    <td>time_create</td>
+    <td>Время добавления находки на карту</td>
     <td>Date</td>
   </tr>
   <tr>
-    <td>photo_url</td>
-    <td>Ссылка на фотографию находки</td>
+    <td>time_create</td>
+    <td>Время обновления информации о находке</td>
+    <td>Date</td>
+  </tr>
+  <tr>
+    <td>photo</td>
+    <td>Фотография находки</td>
     <td>String</td>
   </tr>
   <tr>
