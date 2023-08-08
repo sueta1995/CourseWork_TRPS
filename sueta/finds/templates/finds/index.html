@@ -11,13 +11,13 @@
             <a class="card mb-3" href={% url 'detail' find.id %}>
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="{{ find.photo_url }}" class="img-fluid rounded-start" alt="...">
+                        <img src="{{ find.photo }}" class="img-fluid rounded-start" alt="...">
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
                             <h5 class="card-title">{{ find.dragonfly.common_name }} ({{ find.dragonfly.specific_name }})</h5>
                             <p class="card-text">{{ find.comment }}</p>
-                            <p class="card-text"><small class="text-muted">От пользователя {{ find.user_id }} в {{ find.publication_date }}</small></p>
+                            <p class="card-text"><small class="text-muted">От пользователя {{ find.user_id }} в {{ find.time_create }}</small></p>
                         </div>
                     </div>
                 </div>
