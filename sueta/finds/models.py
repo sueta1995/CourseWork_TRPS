@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 
 class Dragonfly(models.Model):
@@ -8,6 +9,9 @@ class Dragonfly(models.Model):
 
     def __str__(self):
         return self.specific_name
+    
+    def get_absolute_url(self):
+        return reverse("detail_dragonfly", kwargs={"dragonfly_id": self.pk})
 
 
 class Find(models.Model):
@@ -21,3 +25,7 @@ class Find(models.Model):
 
     def __str__(self):
         return self.dragonfly.specific_name
+    
+    def get_absolute_url(self):
+        return reverse("detail_find", kwargs={"pk": self.pk})
+    

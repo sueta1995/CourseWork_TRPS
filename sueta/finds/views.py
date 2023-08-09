@@ -15,24 +15,32 @@ def index(request):
     template = loader.get_template('finds/index.html')
     context = {
         'finds': finds,
+        'title': 'Стрекозки'
     }
 
     return HttpResponse(template.render(context, request))
 
 
-def detail(request, find_id):
+def detail_find(request, find_id):
     find = get_object_or_404(Find, id=find_id)
     template = loader.get_template('finds/detail.html')
     context = {
         'find': find,
+        'title': find.common_name
     }
 
     return HttpResponse(template.render(context, request))
 
+
+def detail_dragonfly(request, dragonfly_id):
+    return HttpResponse(dragonfly_id, request)
+
+
 def contacts(request):
     template = loader.get_template('finds/contacts.html')
 
-    return HttpResponse(template.render(None, request))
+    return HttpResponse(template.render({ 'title': 'Контакты' }, request))
+
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound('Пиздец, не найдено')
