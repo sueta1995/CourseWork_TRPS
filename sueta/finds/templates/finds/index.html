@@ -3,10 +3,8 @@
 {% load static %}
 {% load finds_tags %}
 
-<link rel="stylesheet" href="{% static 'finds/style.css' %}">
-
 {% block content %}
-    <h1 class="display-6 mb-5">Добавленные виды стрекоз</h1>
+    <h1 class="display-6 mb-3">Добавленные виды стрекоз</h1>
 
     {% get_dragonflies as dragonflies %}
 
@@ -17,9 +15,10 @@
 
                 <div class="col">
                     <div class="card h-100" href={{ dragonfly.get_absolute_url }}>
-                        <img src="{% static 'finds' %}/{{ dragonfly.specific_name }}/1.jpg" class="card-img-top" alt="{{ dragonfly.specific_name }}" />
+                        <img src="{% static 'finds/images' %}/{{ dragonfly.specific_name }}/0.jpg" class="card-img-top" alt="{{ dragonfly.specific_name }}" />
                         <div class="card-body">
                             <p class="card-text"><h5>{{ dragonfly.specific_name }}</h5>{{ dragonfly.common_name }}</p>
+                            <a href="#" class="stretched-link"></a>
                         </div>
                     </div>
                 </div>
