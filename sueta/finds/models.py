@@ -11,7 +11,7 @@ class Dragonfly(models.Model):
         return self.specific_name
     
     def get_absolute_url(self):
-        return reverse("detail_dragonfly", kwargs={"dragonfly_id": self.pk})
+        return reverse("finds_list", kwargs={"dragonfly_id": self.pk})
 
 
 class Find(models.Model):
@@ -27,5 +27,5 @@ class Find(models.Model):
         return self.dragonfly.specific_name
     
     def get_absolute_url(self):
-        return reverse("detail_find", kwargs={"pk": self.pk})
+        return reverse("detail", kwargs={"pk": self.pk})
     

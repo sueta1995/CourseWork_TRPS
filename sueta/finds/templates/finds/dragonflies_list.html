@@ -18,7 +18,7 @@
                         <img src="{% static 'finds/images' %}/{{ dragonfly.specific_name }}/0.jpg" class="card-img-top" alt="{{ dragonfly.specific_name }}" />
                         <div class="card-body">
                             <p class="card-text"><h5>{{ dragonfly.specific_name }}</h5>{{ dragonfly.common_name }}</p>
-                            <a href="#" class="stretched-link"></a>
+                            <a href="{% url 'finds_list' dragonfly.id %}" class="stretched-link"></a>
                         </div>
                     </div>
                 </div>

@@ -1,39 +1,53 @@
+from typing import Any, Dict
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.template import loader
 from django.http import HttpResponse, HttpResponseNotFound
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 from django.urls import reverse_lazy
-
 
 from .models import *
 
-# Create your views here.
 
-def index(request):
-    finds = Find.objects.order_by('-time_create')[:5]
-    template = loader.get_template('finds/index.html')
-    context = {
-        'finds': finds,
-        'title': 'Стрекозки'
-    }
+class DragonfliesList(ListView):
+    model = Dragonfly
+    template_name = 'finds/dragonflies_list.html'
+    
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Стрекозки'
 
-    return HttpResponse(template.render(context, request))
+        return context
+    
+
+class FindsList(ListView):
+    model = Find
+    template_name = 'finds/finds_list.html'
+    context_object_name = 'finds'
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        d = get_object_or_404(Dragonfly, pk=self.kwargs['dragonfly_id'])
+
+        context = super().get_context_data(**kwargs)
+        context['title'] = d.common_name
+        context['specie'] = d.specific_name
+
+        return context
+
+    def get_queryset(self):
+        return Find.objects.filter(dragonfly__id=self.kwargs['dragonfly_id'])
+    
 
 
-def detail_find(request, find_id):
-    find = get_object_or_404(Find, id=find_id)
-    template = loader.get_template('finds/detail.html')
+def detail(request, find_id):
+    find = get_object_or_404(Find, pk=find_id)
+    template = loader.get_template('finds/finds_list.html')
     context = {
         'find': find,
         'title': find.common_name
     }
 
     return HttpResponse(template.render(context, request))
-
-
-def detail_dragonfly(request, dragonfly_id):
-    return HttpResponse(dragonfly_id, request)
 
 
 def contacts(request):
