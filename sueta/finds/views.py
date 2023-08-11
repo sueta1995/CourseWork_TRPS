@@ -26,16 +26,21 @@ class FindsList(ListView):
     context_object_name = 'finds'
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        d = get_object_or_404(Dragonfly, pk=self.kwargs['dragonfly_id'])
-
         context = super().get_context_data(**kwargs)
-        context['title'] = d.common_name
-        context['specie'] = d.specific_name
+
+        if 'dragonfly_id' in self.kwargs:
+            d = get_object_or_404(Dragonfly, pk=self.kwargs['dragonfly_id'])
+
+            context['title'] = d.common_name
+            context['specie'] = d.specific_name
+        else:
+            context['title'] = 'Последние находки'
+            context['specie'] = None
 
         return context
 
     def get_queryset(self):
-        return Find.objects.filter(dragonfly__id=self.kwargs['dragonfly_id'])
+        return Find.objects.filter(dragonfly__id=self.kwargs['dragonfly_id']) if 'dragonfly_id' in self.kwargs else Find.objects.all
     
 
 

@@ -27,7 +27,7 @@
                                 <a class="nav-link" aria-current="page" href={% url 'index' %}>Виды стрекоз</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Последние находки</a>
+                                <a class="nav-link" href="{% url 'finds_list_all' %}">Последние находки</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Пользователи</a>
@@ -36,6 +36,7 @@
                                 <a class="nav-link" href={% url 'contacts' %}>Контакты</a>
                             </li>
                         </ul>
+
                         {% comment %} <ul class="nav justify-content-end">
                             <% if current_user.present? %>
                                 <li class="nav-item">
@@ -50,6 +51,7 @@
                                 </li>
                             <% end %>
                         </ul> {% endcomment %}
+
                     </div>
                 </div>
             </nav>

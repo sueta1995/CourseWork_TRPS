@@ -1,7 +1,13 @@
 {% extends 'finds/base.html' %}
 
 {% block content %}
-    <h1 class="display-6 mb-1">Находки по виду {{ specie }}</h1><br>
+    <h1 class="display-6 mb-3">
+        {% if specie is None %}
+            Последние находки
+        {% else %}
+            Находки по виду {{ specie }}
+        {% endif %}
+    </h1>
 
     {% if finds%}
         {% for find in finds %}
@@ -13,7 +19,7 @@
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
-                            <h5 class="card-title">{{ specie }}</h5>
+                            <h5 class="card-title">{{ find.dragonfly.specific_name }}</h5>
                             <p class="card-text">{{ find.comment }}</p>
                             <p class="card-text"><small class="text-muted">Создано пользователем 1 в {{ find.time_create }}</small></p>
                         </div>
