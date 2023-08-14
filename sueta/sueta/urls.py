@@ -25,6 +25,7 @@ from sueta import settings
 urlpatterns = [
     path('', include('finds.urls')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:

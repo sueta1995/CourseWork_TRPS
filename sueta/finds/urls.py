@@ -7,5 +7,5 @@ urlpatterns = [
     path('contacts', views.contacts, name='contacts'),
     path('find/<int:find_id>/', views.detail, name='detail'),
     path('dragonfly/<int:dragonfly_id>/', views.FindsList.as_view(), name='finds_list'),
-    path('dragonfly/', views.FindsList.as_view(), name='finds_list_all')
+    path('dragonfly/', views.FindsList.as_view(), name='finds_list_all'),
 ]

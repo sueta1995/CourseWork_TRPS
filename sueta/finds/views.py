@@ -1,10 +1,11 @@
 from typing import Any, Dict
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.template import loader
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import CreateView, ListView
 from django.urls import reverse_lazy
+from django.contrib.auth import logout
 
 from .models import *
 
@@ -59,6 +60,12 @@ def contacts(request):
     template = loader.get_template('finds/contacts.html')
 
     return HttpResponse(template.render({ 'title': 'Контакты' }, request))
+
+
+def logout(request):
+    logout(request)
+
+    return redirect('index')
 
 
 def pageNotFound(request, exception):

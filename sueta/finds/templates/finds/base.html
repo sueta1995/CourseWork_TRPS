@@ -37,20 +37,22 @@
                             </li>
                         </ul>
 
-                        {% comment %} <ul class="nav justify-content-end">
-                            <% if current_user.present? %>
+                        <ul class="nav justify-content-end">
+                            {% if user.is_authenticated %}
                                 <li class="nav-item">
-                                    <%= link_to "#{current_user.nickname}", "/users/#{current_user.id}", id: 'user-button', class: "btn btn-link btn-sm nav-link link-secondary" %>
+                                    <a class="btn btn-link btn-sm nav-link link-secondary" href={% url 'index' %}>{{ user.username }}</a>
+                                    {% comment %} <%= link_to "#{current_user.nickname}", "/users/#{current_user.id}", id: 'user-button', class: "btn btn-link btn-sm nav-link link-secondary" %> {% endcomment %}
                                 </li>
                                 <li class="nav-item">
-                                    <%= button_to 'Выйти', session_path, method: :delete, id: 'exit-button', class: "btn btn-link btn-sm nav-link link-secondary" %>
+                                    <a class="btn btn-link btn-sm nav-link link-secondary" href={% url 'logout' %}>Выйти</a>
+                                    {% comment %} <%= button_to 'Выйти', session_path, method: :delete, id: 'exit-button', class: "btn btn-link btn-sm nav-link link-secondary" %> {% endcomment %}
                                 </li>
-                            <% else %>
+                            {% else %}
                                 <li class="nav-item">
-                                    <a class="nav-link link-secondary" href="/session/new">Авторизация</a>
+                                    <a class="nav-link link-secondary" href={% url 'login' %}>Авторизация</a>
                                 </li>
-                            <% end %>
-                        </ul> {% endcomment %}
+                            {% endif %}
+                        </ul>
 
                     </div>
                 </div>
