@@ -567,6 +567,11 @@ model.summary()
     <td>String</td>
   </tr>
   <tr>
+    <td>confirmed</td>
+    <td>Подтверждена ли находка</td>
+    <td>Boolean</td>
+  </tr>
+  <tr>
     <td>user_id</td>
     <td>Указатель на пользователя, который добавил находку</td>
     <td>Integer</td>
