@@ -1,0 +1,64 @@
+{% extends 'finds/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <h1 class="display-6 mb-3">Подтверждение находки</h1>
+
+    <p>Стрекоза, которую вы нашли, похожа на стрекоз, представленных ниже?</p>
+
+    <style>
+        .carousel-item {
+            background: #777;
+            position: relative;
+            height: 100%;
+        }
+    </style>
+
+    <div class="row justify-content-between mb-3">
+        <div class="col-5">
+            <img class="w-100 img-fluid" src="{{ find.photo.url }}">
+        </div>
+        <div class='col-5'>
+            <div id="carouselDragonflies" class="carousel slide">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img class="d-block w-100 img-fluid" src="{% static 'finds/images' %}/{{ find.dragonfly.specific_name }}/0.jpg" alt="First slide">
+                    </div>
+                    
+                    {% for i in n %}
+                        <div class="carousel-item">
+                            <img class="d-block w-100 img-fluid" src="{% static 'finds/images' %}/{{ find.dragonfly.specific_name }}/{{ i }}.jpg" alt="Second slide">
+                        </div>
+                    {% endfor %}
+
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselDragonflies" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselDragonflies" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex">
+        <form action="{% url 'finds_update' %}" method="post">
+            {% csrf_token %}
+            
+            <input type="hidden" name="find_id" value="{{ find.id }}">
+            <button type="submit" class="btn btn-success">Да</button>
+        </form>
+
+        <form action="{% url 'finds_delete' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="find_id" value="{{ find.id }}">
+            <button type="submit" class="btn btn-danger">Нет</button>
+        </form>
+    </div>
+
+{% endblock %}

@@ -183,3 +183,7 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 /cv2_train/
+
+# файлы моделей
+*.h5
+*.npy

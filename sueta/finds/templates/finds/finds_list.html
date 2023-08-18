@@ -1,6 +1,28 @@
 {% extends 'finds/base.html' %}
 
 {% block content %}
+    {% if specie is None and user.is_authenticated %}
+        <h1 class="display-6 mb-3">Загрузите свою находку</h1>
+
+        <form action="{% url 'finds_upload' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-error">{{ form.non_field_errors }}</div>
+
+            {% for f in form %}
+                <div class="form-group mb-3">
+                    <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    {{ f }}
+                    <div class="form-error">{{ f.errors }}</div>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-dark">Добавить</button>
+        </form>
+
+        <div class="pb-5"></div>
+    {% endif %}
+
     <h1 class="display-6 mb-3">
         {% if specie is None %}
             Последние находки
@@ -9,7 +31,7 @@
         {% endif %}
     </h1>
 
-    {% if finds%}
+    {% if finds %}
         {% for find in finds %}
 
             <div class="card mb-3">
@@ -21,7 +43,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ find.dragonfly.specific_name }}</h5>
                             <p class="card-text">{{ find.comment }}</p>
-                            <p class="card-text"><small class="text-muted">Создано пользователем 1 в {{ find.time_create }}</small></p>
+                            <p class="card-text"><small class="text-muted">Создано пользователем {{ find.user }} в {{ find.time_create }}</small></p>
                         </div>
                     </div>
                 </div>

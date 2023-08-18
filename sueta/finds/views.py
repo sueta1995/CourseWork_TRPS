@@ -6,8 +6,12 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import CreateView, ListView
 from django.urls import reverse_lazy
 from django.contrib.auth import logout
+from django.conf import settings
+
+import os
 
 from .models import *
+from .forms import *
 
 
 class DragonfliesList(ListView):
@@ -35,8 +39,11 @@ class FindsList(ListView):
             context['title'] = d.common_name
             context['specie'] = d.specific_name
         else:
+            form = AddFindForm()
+
             context['title'] = 'Последние находки'
             context['specie'] = None
+            context['form'] = form
 
         return context
 
@@ -64,6 +71,48 @@ def contacts(request):
 
 def logout(request):
     logout(request)
+
+    return redirect('index')
+
+
+def finds_upload(request):
+    if request.method == 'POST':
+        form = AddFindForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            Find.objects.filter(confirmed=False, user_id=request.user.id).delete()
+
+            find = Find.objects.create(**form.cleaned_data)
+
+            find.dragonfly = Dragonfly.objects.filter(specific_name=find.predict_specie())[0]
+            find.user = request.user
+            find.save()                
+
+            template = loader.get_template('finds/finds_upload.html')
+            context = {
+                'n': range(1, 5),
+                'find': find,
+                'title': 'Подтверждение находки'
+            }
+
+            return HttpResponse(template.render(context, request))
+    else:
+        return redirect('index')
+
+
+def finds_update(request):
+    if request.method == 'POST':
+        find = Find.objects.filter(pk=request.POST['find_id'])[0]
+        find.confirmed = True
+        find.save()
+
+    return redirect('index')
+
+
+def finds_delete(request):
+    if request.method == 'POST':
+        find = Find.objects.filter(pk=request.POST['find_id'])
+        find.delete()
 
     return redirect('index')
 

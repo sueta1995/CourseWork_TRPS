@@ -15,6 +15,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
+
+# Библиотека для работы с моделью и обработки изображений
+import numpy as np
+import keras
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'finds.apps.FindsConfig'
+    'finds.apps.FindsConfig',
+    'django_cleanup.apps.CleanupConfig'
 ]
 
 MIDDLEWARE = [
@@ -138,3 +144,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = '/'
+
+# загрузка модели
+MODEL = keras.models.load_model(os.path.join(BASE_DIR, 'models/odonata_model.h5'))
+CATEGORIES = np.load(os.path.join(BASE_DIR, 'models/odonata_model.npy'))
