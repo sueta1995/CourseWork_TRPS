@@ -20,10 +20,10 @@
 - [x] **16.06.2023-20.06.2023** - *Загрузка данных с сервиса iNaturalist, анализ данных, создание из загруженных данных датасета.*
 - [x] **16.07.2023-22.07.2023** - *Изучение существующих архитектур моделей, изучение сверточных нейронных сетей.*
 - [x] **23.07.2023-28.07.2023** - *Написание кода модели, попытка обучения модели и ее тестирование на тестируемых данных, исследование использованных вариантов.*
-- [ ] **29.07.2023-02.08.2023** - *Изучение фреймворка Django, повторение паттерна MVC, для создания веб-приложений.*
-- [ ] **03.08.2023-06.08.2023** - *Создание главного меню и системы регистрации.*
-- [ ] **09.08.2023-18.08.2023** - *Внедрение API карт в веб-приложение, реализация функции создания меток с найденными пользователями стрекозами, внедрение модели для предсказания вида.*
-- [ ] **19.08.2023-20.08.2023** - *Тестирование первой версии созданной программы.*
+- [x] **29.07.2023-02.08.2023** - *Изучение фреймворка Django, повторение паттерна MVC, для создания веб-приложений.*
+- [x] **03.08.2023-06.08.2023** - *Создание главного меню и системы регистрации.*
+- [x] **09.08.2023-18.08.2023** - *Внедрение API карт в веб-приложение, реализация функции создания меток с найденными пользователями стрекозами, внедрение модели для предсказания вида.*
+- [x] **19.08.2023-20.08.2023** - *Тестирование первой версии созданной программы.*
 
 ~~А потом со слезами читать книгу про сети и готовиться к Тихомировой.~~
 
@@ -591,4 +591,420 @@ model.summary()
 
 На данном этапе будет проектироваться и реализовываться система регистрации и главное меню. Главное меню в рамках проекта - лист последних находок и шапка сайта с переходами на страницы карты и регистрации.
 
+Главное меню будет включать себя список всех возможных видов стрекоз (их 44). В навигационной панели будут ссылки на главное меню, страницу с функцией размещения информации о находке, страницу со всеми пользователями, страницу с информацией о сервисе и разработчиках и страницу авторизации (регистрации).
+
+Шаблон для главного меню `dragonflies_list.html`:
+
+```html
+{% extends 'finds/base.html' %}
+
+{% load static %}
+{% load finds_tags %}
+
+{% block content %}
+    <h1 class="display-6 mb-3">Добавленные виды стрекоз</h1>
+
+    {% get_dragonflies as dragonflies %}
+
+    {% if dragonflies %}
+        <div class="row row-cols-1 row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 g-4">
+
+            {% for dragonfly in dragonflies %}
+
+                <div class="col">
+                    <div class="card h-100" href={{ dragonfly.get_absolute_url }}>
+                        <img src="{% static 'finds/images' %}/{{ dragonfly.specific_name }}/0.jpg" class="card-img-top" alt="{{ dragonfly.specific_name }}" />
+                        <div class="card-body">
+                            <p class="card-text"><h5>{{ dragonfly.specific_name }}</h5>{{ dragonfly.common_name }}</p>
+                            <a href="{% url 'finds_list' dragonfly.id %}" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <p>Пока что никто ничего не находил ;(</p>
+    {% endif %}
+
+{% endblock %}
+```
+
+Класс `DragonfliesList` в `views.py`, отвечающий за отображение всех видов стрекоз для главного меню:
+
+```python
+class DragonfliesList(ListView):
+    model = Dragonfly
+    template_name = 'finds/dragonflies_list.html'
+    
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Стрекозки'
+
+        return context
+```
+
+Функция `contacts` отвечающая за отображение информации о сервисе:
+
+```python
+def contacts(request):
+    template = loader.get_template('finds/contacts.html')
+
+    return HttpResponse(template.render({ 'title': 'Контакты' }, request))
+```
+
+Шаблон `registration/login.html` для страницы с авторизацией:
+
+```html
+{% extends "finds/base.html" %}
+
+{% block content %}
+
+{% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+{% if next %}
+    {% if user.is_authenticated %}
+        <p>Your account doesn't have access to this page. To proceed,
+        please login with an account that has access.</p>
+    {% else %}
+        <p>Please login to see this page.</p>
+    {% endif %}
+{% endif %}
+
+<form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+<table>
+
+<tr>
+    <td>{{ form.username.label_tag }}</td>
+    <td>{{ form.username }}</td>
+</tr>
+
+<tr>
+    <td>{{ form.password.label_tag }}</td>
+    <td>{{ form.password }}</td>
+</tr>
+</table>
+
+<input type="submit" value="login" />
+<input type="hidden" name="next" value="{{ next }}" />
+</form>
+
+{# Assumes you setup the password_reset view in your URLconf #}
+<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+
+{% endblock %}
+```
+
+Часть базового шаблона `base.html`, с навигационной панелью:
+
+```html
+<header class="page-header">
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark navbar-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">OdonataMap</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href={% url 'index' %}>Виды стрекоз</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'finds_list_all' %}">Добавить находку</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Пользователи</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href={% url 'contacts' %}>Контакты</a>
+                    </li>
+                </ul>
+
+                <ul class="nav justify-content-end navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="btn btn-link btn-sm nav-link link-secondary" href={% url 'index' %}>{{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-link btn-sm nav-link link-secondary" href={% url 'logout' %}>Выйти</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link link-secondary" href={% url 'login' %}>Авторизация</a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+</header>
+```
+
+На данный момент не реализована регистрация (доступен только вход для пользователей, созданных администратором сервиса). Также из-за данного ограничения недоступен вывод списка всех пользователей. 
+
+В главном меню отображается сетка из карточек (*bootstrap*) с научным наименованием вида и с одним изображением стрекозы вида. Каждая из карточек представляет собой ссылку на страницу с картой мест обитания вида и списком последних находок.
+
+Другие файлы, связанные с главным меню, находятся в ветви `web` репозитория.
+
 ## Функция создания меток со стрекозами
+
+Добавление находок на карту мест обитания происходит через страницу со списком всех последних находок. В верху основной части находится форма с полем для выбора координаты на карте (место находки), текстовым полем для комментария и полем для загрузки изображения найденной стрекозы. После введения этих данных, происходит переход на следующую страницу `finds_upload.html` (также происходит сохранение находки, но `confirmed = False`, на которой пользователю дается выбор: похожа ли найденная стрекоза на стрекозу, предсказанную с помощью модели. Если да, то находка обновляется в БД со статусом `confirmed = True`, если нет, то находка удаляется.
+
+Часть шаблона `finds_list.html`, отвечающая за отображение формы для добавления новой:
+
+```html
+{% if specie is None and user.is_authenticated %}
+    <h1 class="display-6 mb-3">Загрузите свою находку</h1>
+
+    <form action="{% url 'finds_upload' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-error">{{ form.non_field_errors }}</div>
+
+        {% for f in form %}
+            <div class="form-group mb-3">
+                <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+                {{ f }}
+                <div class="form-error">{{ f.errors }}</div>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-dark">Добавить</button>
+    </form>
+
+    <div class="pb-5"></div>
+{% endif %}
+```
+
+Часть, отвечающая за отображение списка находок:
+
+```html
+{% if finds %}
+    {% for find in finds %}
+
+        <div class="card mb-3 mt-5">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <img src="{{ find.photo.url }}" class="img-fluid rounded-start" alt="...">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ find.dragonfly.specific_name }}</h5>
+                        <p class="card-text">{{ find.comment }}</p>
+                        <p class="card-text"><small class="text-muted">Создано пользователем {{ find.user }} в {{ find.time_create }}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endfor %}
+{% else %}
+    <p>Находок пока что нет!</p>
+{% endif %}
+```
+
+Шаблон `finds_upload.html`, отвечающий за подтверждение находки:
+
+```html
+{% extends 'finds/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <h1 class="display-6 mb-3">Подтверждение находки</h1>
+
+    <p>Стрекоза, которую вы нашли, похожа на стрекоз, представленных ниже?</p>
+
+    <style>
+        .carousel-item {
+            background: #777;
+            position: relative;
+            height: 100%;
+        }
+    </style>
+
+    <div class="row justify-content-between mb-3">
+        <div class="col-5">
+            <img class="w-100 img-fluid" src="{{ find.photo.url }}">
+        </div>
+        <div class='col-5'>
+            <div id="carouselDragonflies" class="carousel slide">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img class="d-block w-100 img-fluid" src="{% static 'finds/images' %}/{{ find.dragonfly.specific_name }}/0.jpg" alt="First slide">
+                    </div>
+                    
+                    {% for i in n %}
+                        <div class="carousel-item">
+                            <img class="d-block w-100 img-fluid" src="{% static 'finds/images' %}/{{ find.dragonfly.specific_name }}/{{ i }}.jpg" alt="Second slide">
+                        </div>
+                    {% endfor %}
+
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselDragonflies" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselDragonflies" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex">
+        <form action="{% url 'finds_update' %}" method="post">
+            {% csrf_token %}
+            
+            <input type="hidden" name="find_id" value="{{ find.id }}">
+            <button type="submit" class="btn btn-success">Да</button>
+        </form>
+
+        <form action="{% url 'finds_delete' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="find_id" value="{{ find.id }}">
+            <button type="submit" class="btn btn-danger">Нет</button>
+        </form>
+    </div>
+
+{% endblock %}
+```
+
+Класс `FindsList` в `views.py` для шаблона:
+
+```python
+class FindsList(ListView):
+    model = Find
+    template_name = 'finds/finds_list.html'
+    context_object_name = 'finds'
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        if 'dragonfly_id' in self.kwargs:
+            d = get_object_or_404(Dragonfly, pk=self.kwargs['dragonfly_id'])
+
+            context['title'] = d.common_name
+            context['specie'] = d.specific_name
+        else:
+            form = AddFindForm()
+
+            context['title'] = 'Последние находки'
+            context['specie'] = None
+            context['form'] = form
+
+        return context
+
+    def get_queryset(self):
+        return Find.objects.filter(dragonfly__id=self.kwargs['dragonfly_id']) if 'dragonfly_id' in self.kwargs else Find.objects.all
+```
+
+Функции вызываемые при `POST-запросах` для создания, обновления и удаления находок:
+
+```python
+def finds_upload(request):
+    if request.method == 'POST':
+        form = AddFindForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            Find.objects.filter(confirmed=False, user_id=request.user.id).delete()
+
+            find = Find.objects.create(**form.cleaned_data)
+
+            find.dragonfly = Dragonfly.objects.filter(specific_name=find.predict_specie())[0]
+            find.user = request.user
+            find.save()                
+
+            template = loader.get_template('finds/finds_upload.html')
+            context = {
+                'n': range(1, 5),
+                'find': find,
+                'title': 'Подтверждение находки'
+            }
+
+            return HttpResponse(template.render(context, request))
+    else:
+        return redirect('index')
+
+
+def finds_update(request):
+    if request.method == 'POST':
+        find = Find.objects.filter(pk=request.POST['find_id'])[0]
+        find.confirmed = True
+        find.save()
+
+    return redirect('index')
+
+
+def finds_delete(request):
+    if request.method == 'POST':
+        find = Find.objects.filter(pk=request.POST['find_id'])
+        find.delete()
+
+    return redirect('index')
+```
+
+Изучение существующих API для карт потратило значительное время. В итоге выбор остановился на **Yandex Maps JavaScript API**, в котором доступна детализированная карта на русском языке. В ней достаточно несложно добавлять новые объекты, которые помогут создать зоны мест обитания различных стрекоз. На данный момент карта внедрена в своем обычном виде, однако в последующих обновления сервиса карта будет преображаться для более удобного использования.
+
+Взаимодействие с картой происходит через JS. Но сначала нужно добавить script-тег в `base.html`:
+
+```html
+{% get_env 'YMAPS' as apikey %}
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ apikey }}&lang=ru_RU" type="text/javascript"></script>
+```
+
+Карта для отображения всех находок определенного вида:
+
+```javascript
+ymaps.ready(main);
+    
+function main() {
+    var map = new ymaps.Map("map", {
+        center: [55.76, 37.64],
+        zoom: 10
+    }, {
+        searchControlProvider: 'yandex#search'
+    }),
+    objectManager = new ymaps.ObjectManager({
+        // Чтобы метки начали кластеризоваться, выставляем опцию.
+        clusterize: true,
+        // ObjectManager принимает те же опции, что и кластеризатор.
+        gridSize: 32,
+        clusterDisableClickZoom: true
+    }),
+    id = 0;
+    
+    {% for find in finds %}
+
+        objectManager.add({
+            type: 'Feature',
+            id: id++,
+            geometry: {
+                type: 'Point',
+                coordinates: [{{ find.latitude}}, {{ find.longitude }}]
+            },
+            properties: {
+                hintContent: 'Находка от {{ find.user }} в {{ find.time_create }}',
+                balloonContent: '<p>{{ find.dragonfly.specific_name }}</p> <img src="{{ find.photo.url }}" class="img-fluid rounded">'
+            }
+        });
+        
+    {% endfor %}
+
+    // Чтобы задать опции одиночным объектам и кластерам,
+    // обратимся к дочерним коллекциям ObjectManager.
+    objectManager.objects.options.set('preset', 'islands#greenIcon');
+    objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
+    map.geoObjects.add(objectManager);
+}
+```
+
+Другие файлы, связанные с реализацией функции добавления находок, находятся в ветви `web` репозитория.
