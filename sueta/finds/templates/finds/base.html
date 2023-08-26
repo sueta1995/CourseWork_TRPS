@@ -1,4 +1,5 @@
 {% load static %}
+{% load finds_tags %}
 
 <!DOCTYPE html>
 <html>
@@ -12,8 +13,9 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    
-        <script src="https://api-maps.yandex.ru/v3/?apikey=07dc2f26-604a-4ad8-af28-d421e725a8e6&lang=en_US" type="text/javascript"></script>
+        
+        {% get_env 'YMAPS' as apikey %}
+        <script src="https://api-maps.yandex.ru/2.1/?apikey={{ apikey }}&lang=ru_RU" type="text/javascript"></script>
 
     </head>
     <body>
