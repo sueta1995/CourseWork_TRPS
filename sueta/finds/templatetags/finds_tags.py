@@ -8,7 +8,7 @@ register = template.Library()
 
 @register.simple_tag()
 def get_finds():
-    return Find.objects.all()
+    return Find.objects.filter(confirmed=True)[::-1]
 
 @register.simple_tag()
 def get_dragonflies():
