@@ -14,7 +14,7 @@
             {% for dragonfly in dragonflies %}
 
                 <div class="col">
-                    <div class="card h-100" href={{ dragonfly.get_absolute_url }}>
+                    <div class="card h-100">
                         <img src="{% static 'finds/images' %}/{{ dragonfly.specific_name }}/0.jpg" class="card-img-top" alt="{{ dragonfly.specific_name }}" />
                         <div class="card-body">
                             <p class="card-text"><h5>{{ dragonfly.specific_name }}</h5>{{ dragonfly.common_name }}</p>

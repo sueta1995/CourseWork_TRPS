@@ -4,6 +4,56 @@
     {% if specie is None and user.is_authenticated %}
         <h1 class="display-6 mb-3">Загрузите свою находку</h1>
 
+        <script>
+            var coords = [0, 0];
+
+            ymaps.ready(main);
+
+            function main() {
+                var map = new ymaps.Map("map", {
+                    center: [55.76, 37.64],
+                    zoom: 10
+                }, {
+                    searchControlProvider: 'yandex#search'
+                }),
+
+                objectManager = new ymaps.ObjectManager({
+                    // Чтобы метки начали кластеризоваться, выставляем опцию.
+                    clusterize: true,
+                    // ObjectManager принимает те же опции, что и кластеризатор.
+                    gridSize: 32,
+                    clusterDisableClickZoom: true
+                });
+
+                map.events.add('click', function (e) {
+                    if (objectManager.objects.getLength() > 0) {
+                        objectManager.removeAll();
+                    }
+
+                    else {
+                        coords = e.get('coords');
+
+                        objectManager.add({
+                            type: 'Feature',
+                            id: 0,
+                            geometry: {
+                                type: 'Point',
+                                coordinates: coords
+                            },
+                        });
+
+                        map.geoObjects.add(objectManager);
+
+                        document.getElementById('latitude-input').value = coords[0];
+                        document.getElementById('longitude-input').value = coords[1]
+
+                    }
+                })
+            }
+        </script>
+
+        <div id="map" class="mb-3"></div>
+
         <form action="{% url 'finds_upload' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
@@ -12,6 +62,7 @@
             {% for f in form %}
                 <div class="form-group mb-3">
                     <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+
                     {{ f }}
                     <div class="form-error">{{ f.errors }}</div>
                 </div>
@@ -89,6 +140,7 @@
                             <h5 class="card-title">{{ find.dragonfly.specific_name }}</h5>
                             <p class="card-text">{{ find.comment }}</p>
                             <p class="card-text"><small class="text-muted">Создано пользователем {{ find.user }} в {{ find.time_create }}</small></p>
+                            <a href="{% url 'detail' find.id %}" class="stretched-link"></a>
                         </div>
                     </div>
                 </div>

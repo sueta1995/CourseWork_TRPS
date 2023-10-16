@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.template import loader
 from django.http import HttpResponse, HttpResponseNotFound
-from django.views.generic import CreateView, ListView
+from django.views.generic import ListView
 from django.urls import reverse_lazy
 from django.contrib.auth import logout
 from django.conf import settings
@@ -54,13 +54,12 @@ class FindsList(ListView):
 
 def detail(request, find_id):
     find = get_object_or_404(Find, pk=find_id)
-    template = loader.get_template('finds/finds_list.html')
     context = {
         'find': find,
-        'title': find.common_name
+        'title': find.dragonfly.common_name
     }
 
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(f"{find.dragonfly.common_name}, {find.longitude}, {find.latitude}, {find.comment}")
 
 
 def contacts(request):
@@ -118,4 +117,4 @@ def finds_delete(request):
 
 
 def pageNotFound(request, exception):
-    return HttpResponseNotFound('Пиздец, не найдено')
+    return HttpResponseNotFound('Страница не найдена')
