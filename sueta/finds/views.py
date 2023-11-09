@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.template import loader
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import ListView
+from django.views.generic.detail import DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth import logout
 from django.conf import settings
@@ -49,17 +50,18 @@ class FindsList(ListView):
 
     def get_queryset(self):
         return Find.objects.filter(dragonfly__id=self.kwargs['dragonfly_id']) if 'dragonfly_id' in self.kwargs else Find.objects.all
-    
 
 
-def detail(request, find_id):
-    find = get_object_or_404(Find, pk=find_id)
-    context = {
-        'find': find,
-        'title': find.dragonfly.common_name
-    }
+class FindDetailView(DetailView):
+    model = Find
 
-    return HttpResponse(f"{find.dragonfly.common_name}, {find.longitude}, {find.latitude}, {find.comment}")
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        find = get_object_or_404(Find, pk=self.kwargs['pk'])
+        context['title'] = find.dragonfly.common_name
+        context['find'] = find
+
+        return context
 
 
 def contacts(request):
@@ -95,6 +97,8 @@ def finds_upload(request):
             }
 
             return HttpResponse(template.render(context, request))
+        else:
+            return redirect("finds_list_all")
     else:
         return redirect('index')
 
@@ -105,7 +109,7 @@ def finds_update(request):
         find.confirmed = True
         find.save()
 
-    return redirect('index')
+    return redirect('finds_list_all')
 
 
 def finds_delete(request):
@@ -113,7 +117,7 @@ def finds_delete(request):
         find = Find.objects.filter(pk=request.POST['find_id'])
         find.delete()
 
-    return redirect('index')
+    return redirect('finds_list_all')
 
 
 def pageNotFound(request, exception):

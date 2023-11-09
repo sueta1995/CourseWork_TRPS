@@ -1,0 +1,14 @@
+{% extends 'finds/base.html' %}
+
+{% block content %}
+    <h1 class="display-6 mb-3">Информация о находке</h1>
+
+    <img class="mb-3" src="{{ find.photo.url }}" class="img-fluid rounded-start" alt="...">
+
+    <p>Научное название: {{ find.dragonfly.specific_name }}</p>
+    <p>Русскоязычное название: {{ find.dragonfly.common_name }}</p>
+    <p>Информация о виде: <a href="{{ find.dragonfly.wikipedia_url }}">Википедия</a></p>
+    <p>Нашел: {{ find.user }}</p>
+    <p>Время находки: {{ find.time_create }}
+
+{% endblock %}
